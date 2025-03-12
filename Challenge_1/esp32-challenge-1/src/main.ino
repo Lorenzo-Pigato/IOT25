@@ -35,7 +35,7 @@ void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
 void sendMessage(String message);
 // --------------------------- //
 
-int startTime;
+long long int startTime;
 
 void setup()
 {
@@ -47,8 +47,8 @@ void setup()
     
 
     // HC-SR04 configuration
-    pinMode(ECHO_PIN, INPUT);
     pinMode(TRIG_PIN, OUTPUT);
+    pinMode(ECHO_PIN, INPUT);
     
     Serial.printf("[%d] -- Setup completed\n", micros() - startTime);
 
@@ -59,7 +59,7 @@ void loop()
     // -- loop will be executed only once per cycle due to deep sleep call -- //
 
     // Fetch distance
-    int distance = getDistance();
+    float distance = getDistance();
 
     // Check parking status
     String message = distance < 50 ? "OCCUPIED" : "FREE";
@@ -72,12 +72,15 @@ void loop()
     sendMessage(message);
     Serial.printf("[%d] -- Message sent\n", micros() - startTime);
 
-    delayMicroseconds(500);
+    delay(50);
 
     WiFi.mode(WIFI_OFF);
+    Serial.printf("[%d] -- WiFi turned off\n", micros() - startTime);
 
-    Serial.printf("[%d] -- Entering deep sleep...\n");
+    Serial.printf("[%d] -- Entering deep sleep...\n", micros() - startTime);
     Serial.flush(); // Flush serial buffer before entering deep sleep
+
+    delay(50);
 
     // Set wakeup timer
     esp_sleep_enable_timer_wakeup(SLEEP_TIME_SEC * S_uS_CONV);
@@ -136,8 +139,8 @@ void onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 // Sending callback
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    Serial.printf("Message sent - status: ");
-    Serial.printf(status == ESP_NOW_SEND_SUCCESS ? "SUCCESS\n" : "ERROR\n");
+    Serial.printf("Message status: ");
+    Serial.printf(status == ESP_NOW_SEND_SUCCESS ? "SENT\n" : "ERROR\n");
 }
 
 // Send message through WiFi with ESP-NOW protocol
