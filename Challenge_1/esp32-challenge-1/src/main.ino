@@ -35,15 +35,22 @@ void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
 void sendMessage(String message);
 // --------------------------- //
 
+int startTime;
+
 void setup()
 {
-
+    startTime = micros();
     // Open serial port: 115200
     Serial.begin(115200);
+    
+    Serial.printf("[0] -- Booting\n");
+    
 
     // HC-SR04 configuration
     pinMode(ECHO_PIN, INPUT);
     pinMode(TRIG_PIN, OUTPUT);
+    
+    Serial.printf("[%d] -- Setup completed\n", micros() - startTime);
 
 }
 
@@ -56,16 +63,20 @@ void loop()
 
     // Check parking status
     String message = distance < 50 ? "OCCUPIED" : "FREE";
+    Serial.printf("[%d] -- Sensor reading complete\n", micros() - startTime);
 
     // Configure WiFi for transmission and send message to sink
     wifiInit();
+    Serial.printf("[%d] -- Wifi initialized\n", micros() - startTime);
+
     sendMessage(message);
+    Serial.printf("[%d] -- Message sent\n", micros() - startTime);
 
-    // Set delay to allow simulation to work correctly
-    if (SIM)
-        delay(250);
+    delayMicroseconds(500);
 
-    Serial.println("Entering deep sleep...");
+    WiFi.mode(WIFI_OFF);
+
+    Serial.printf("[%d] -- Entering deep sleep...\n");
     Serial.flush(); // Flush serial buffer before entering deep sleep
 
     // Set wakeup timer
@@ -89,15 +100,14 @@ float getDistance()
     // Convert the result in cm according to sensor's datasheet
     float distance = duration / 58.3;
 
-    Serial.print("Distance: ");
-    Serial.println(distance);
+    Serial.printf("Distance: %.2f\n", distance);
 
     return distance;
 }
 
 void wifiInit()
 {
-    Serial.println("Initializing WiFi...");
+    Serial.printf("Initializing WiFi...\n");
 
     WiFi.mode(WIFI_STA);
     WiFi.setTxPower(WIFI_POWER_2dBm); // Set wifi transmission power
@@ -120,15 +130,14 @@ void onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
     char rcvstring[data_len];
     memcpy(rcvstring, data, data_len);
     
-    Serial.print("Message received: ");
-    Serial.println(String(rcvstring));
+    Serial.printf("Message received: %s\n", String(rcvstring));
 }
 
 // Sending callback
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    Serial.print("Message sent - status: ");
-    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "SUCCESS" : "ERROR");
+    Serial.printf("Message sent - status: ");
+    Serial.printf(status == ESP_NOW_SEND_SUCCESS ? "SUCCESS\n" : "ERROR\n");
 }
 
 // Send message through WiFi with ESP-NOW protocol
