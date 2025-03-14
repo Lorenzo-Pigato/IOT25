@@ -21,7 +21,7 @@
 #define SLEEP_TIME_SEC  8       // Formula: 53 % 50 + 5 = 8 
 #define S_uS_CONV 1000000       // Conversion factor from us to s
 
-#define SIM 1 // Simulation mode: 1 ON | 0 OFF
+long long int startTime;
 
 uint8_t broadcastAddress[] = {0x8C, 0xAA, 0xB5, 0x84, 0xFB, 0x90};
 
@@ -34,8 +34,6 @@ void onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len);
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
 void sendMessage(String message);
 // --------------------------- //
-
-long long int startTime;
 
 void setup()
 {
