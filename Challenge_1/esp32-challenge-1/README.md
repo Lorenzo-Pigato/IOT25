@@ -1,17 +1,15 @@
-# ESP32 NTP Clock
+# ESP32 Parking Sensor
 
-A simple clock that displays the time and date on an LCD1602 display. The time is synced via NTP.
-
-Use [Wokwi](https://marketplace.visualstudio.com/items?itemName=wokwi.wokwi-vscode) to simulate this project.
+A simple parking occupancy sensor made with an ESP32 node using an HC-SR04 ultrasonic distance sensor to estimate the presence of a car in a parking spot. The communication is achieved with the ESP-NOW protocol.
 
 ## Building
 
-This is a [PlatformIO](https://platformio.org) project. To build it, [install PlatformIO](https://docs.platformio.org/en/latest/core/installation/index.html), and then run the following command:
+This is a [PlatformIO](https://platformio.org) project. To build it, [install PlatformIO](https://docs.platformio.org/en/latest/core/installation/index.html), and then run the bash script **compile.sh*:
 
 ```
-pio run
+bash compile.sh <project_folder_dir>
 ```
 
-## Simulate the project
+## Simulation
 
-To simulate this project, install [Wokwi for VS Code](https://marketplace.visualstudio.com/items?itemName=wokwi.wokwi-vscode). Open the project directory in Visual Studio Code, press **F1** and select "Wokwi: Start Simulator".
+To simulate this project, [Wokwi for VS Code](https://marketplace.visualstudio.com/items?itemName=wokwi.wokwi-vscode) can be used after compiling.
