@@ -4,7 +4,7 @@ A simple parking occupancy sensor made with an ESP32 node using an HC-SR04 ultra
 
 ## Building
 
-This is a [PlatformIO](https://platformio.org) project. To build it, [install PlatformIO](https://docs.platformio.org/en/latest/core/installation/index.html), and then run the bash script **compile.sh*:
+This is a [PlatformIO](https://platformio.org) project. To build it, [install PlatformIO](https://docs.platformio.org/en/latest/core/installation/index.html), and then run the bash script **compile.sh**:
 
 ```
 bash compile.sh <project_folder_dir>
