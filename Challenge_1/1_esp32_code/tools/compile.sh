@@ -10,7 +10,7 @@ if [ ! -d "$USERINPUT_FOLDER" ]; then
     exit 1
 fi
 
-# Activate PlatformIO virtual environment
+# Activate PlatformIO virtual environment -- Change the path if necessary
 source /home/iotpolimi/.platformio/penv/bin/activate
 
 # Change to the specified directory
