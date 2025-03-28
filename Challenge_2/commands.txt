@@ -1,0 +1,108 @@
+CQ1) How many different Confirmable PUT requests obtained an unsuccessful response from the local CoAP server?
+
+### Used Filters: 
+coap.type == 0 && coap.code == 3	// CONfirmable PUT requests
+coap.code >= 128 && ip.src == 127.0.0.1	// Error rsponse sent from the server
+
+### Commands
+
+tshark -r challenge2.pcapng -Y "coap.type == 0 && coap.code == 3" -T fields -e coap.mid > put_requests.txt
+tshark -r challenge2.pcapng -Y "coap.code >= 128 && ip.src == 127.0.0.1" -T fields -e coap.mid > error_responses.txt
+
+grep -F -f put_requests.txt error_responses.txt | wc -l
+
+### Answer
+22
+
+-----------------
+
+CQ2) How many CoAP resources in the coap.me public server received the same number of unique Confirmable and Non Confirmable GET requests?
+Assuming a resource receives X different CONFIRMABLE requests and Y different NONCONFIRMABLE GET requests, how many resources have X=Y, with X>0?
+
+### Used Filters: 
+dns.qry.name contains "coap" && dns.flags && dns.flags.response == 1 && dns.a	// Get coap.me ip address: 134.102.218.18
+coap.type == 0 && coap.code == 1 && ip.dst == 134.102.218.18	// CON GET requests
+coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18	// NON GET requests
+
+### Commands
+tshark -r challenge2.pcapng -Y "coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18" -T fields -e coap.opt.uri_path -e coap.token | sort | uniq | cut -f1 | sort | uniq -c > con_get_resources_count.txt
+
+tshark -r challenge2.pcapng -Y "coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18" -T fields -e coap.opt.uri_path -e coap.token | sort | uniq | cut -f1 | sort | uniq -c > non_get_resources_count.txt
+
+comm -12 <(sort con_get_resources_count.txt) <(sort non_get_resources_count.txt)
+
+### Answer
+3: large, secret, validate
+
+----------------
+
+CQ3) How many different MQTT clients subscribe to the public broker HiveMQ using multi-level wildcards? --- 1 client: 10.0.2.15, 
+
+### Used Filters
+// Get IPs for HiveMQ broker
+dns.qry.name == broker.hivemq.com && dns.flags && dns.flags.response == 1 && dns.a				
+
+// Find communication
+(ip.addr == 35.158.43.69 || ip.addr == 35.158.34.213 || ip.addr == 18.192.151.104) && mqtt && mqtt.msgtype == 8 && mqtt.topic contains "#"
+
+### Commands
+tshark -r challenge2.pcapng -Y "(ip.addr == 35.158.43.69 || ip.addr == 35.158.34.213 || ip.addr == 18.192.151.104) && mqtt && mqtt.msgtype == 8 && mqtt.topic contains \"#\" " -T fields -e ip.src -e mqtt.topic    
+
+### Answer
+10.0.2.15       university/+/+/#                                                                          │
+10.0.2.15       university/room0/room1/#                                                                  │
+10.0.2.15       house/#                                                                                   │
+10.0.2.15       university/#                                                                              │
+10.0.2.15       university/building2/section0/#                                                           │
+10.0.2.15       factory/department3/floor0/#
+
+----------------
+
+CQ4) How many different MQTT clients specify a last Will Message to be directed to a topic having as first level "university"?
+
+### Used filters
+mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains "university"
+
+### Commands
+tshark -r challenge2.pcapng -Y "mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains \"university\"" -T fields -e ip.src -e mqtt.willtopic 
+
+tshark -r challenge2.pcapng -Y "mqtt.willtopic contains \"university\"" -T fields -e ip.src -e mqtt.willtopic | wc -l
+
+### Answer
+1: 127.0.0.1 university/department12/room1/temperature
+
+----------------
+
+CQ5) How many MQTT subscribers receive a last will message derived from a subscription without a wildcard?
+
+### Used filters
+mqtt.msgtype == 8 && !mqtt.topic contains "#" && !mqtt.topic contains "+"	//Clients subscribed to topic w/o wildcards
+mqtt.conflag.willflag == 1							// Topics with last will
+
+### Commands
+// Find all the distinct topics that have a flag set for last will message
+tshark -r challenge2.pcapng -Y "mqtt.conflag.willflag == 1" -T fields -e mqtt.topic > topics.txt
+
+// Find all subsrcibtions for those specific topics (no need to control for wildcards, as specified)
+xargs -I{} tshark -r challenge2 -Y "mqtt.msgtype == 8 && (mqtt.topic contains {})" -T fields -e ip.src -e mqtt.topic < topics.txt | sort -u
+
+// Find if any message has been sent by the broker on that topic
+mqtt.msgtype == 3 && (mqtt.topic == "university/departmen12/room1/temperature") && (ip.src == 5.196.78.28 || ip.src == 35.158.43.69 || ip.src == 35.158.34.213 || ip.src == 18.192.151.104)
+
+### Answer
+No Last Will message found
+
+----------------
+
+CQ6) How many MQTT publish messages directed to the public broker mosquitto are sent with the retain option and use QoS “At most once”?
+
+### Used Filters
+dns.qry.name contains "mosquitto" && dns.flags.response == 1 && dns.a
+mqtt.qos == 0 && mqtt.msgtype == 3 && mqtt.retain == 1 && ip.dst ==  5.196.78.28
+
+### Commands
+tshark -r challenge2.pcapng -Y "mqtt.qos == 0 && mqtt.msgtype == 3 && mqtt.retain == 1 && ip.dst ==  5.196.78.28" -T fields -e ip.src -e mqtt.topic | wc -l
+
+### Answer
+208
+----------------
