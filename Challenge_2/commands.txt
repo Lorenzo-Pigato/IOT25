@@ -81,17 +81,26 @@ mqtt.msgtype == 8 && !mqtt.topic contains "#" && !mqtt.topic contains "+"	//Clie
 mqtt.conflag.willflag == 1							// Topics with last will
 
 ### Commands
-// Find all the distinct topics that have a flag set for last will message
-tshark -r challenge2.pcapng -Y "mqtt.conflag.willflag == 1" -T fields -e mqtt.topic > topics.txt
+// Find all the distinct topics that have a flag set for last will message and clients which set them
+tshark -r challenge2.pcapng -Y "mqtt.conflag.willflag == 1" -T fields -e tcp.srcport -e mqtt.willtopic > topics.txt
 
-// Find all subsrcibtions for those specific topics (no need to control for wildcards, as specified)
-xargs -I{} tshark -r challenge2 -Y "mqtt.msgtype == 8 && (mqtt.topic contains {})" -T fields -e ip.src -e mqtt.topic < topics.txt | sort -u
+// Filter connection reset packages by TCP source port to establish if any connection reset has been sent by a client which set a LWT message
+cut -f1 topics.txt | xargs -I{} tshark -r challenge2.pcapng -Y "tcp.flags.reset == 1 && tcp.srcport == {}" -T fields -e tcp.srcport -e tcp.dstport > crash_client.txt
 
-// Find if any message has been sent by the broker on that topic
-mqtt.msgtype == 3 && (mqtt.topic == "university/departmen12/room1/temperature") && (ip.src == 5.196.78.28 || ip.src == 35.158.43.69 || ip.src == 35.158.34.213 || ip.src == 18.192.151.104)
+// Match last will topics with failing clients
+grep "^$(cut -f1 ./CQ5/crash_client.txt)" ./CQ5/topics.txt | cut -f2 > topics_with_failures.txt
+
+// Find messages sent by the broker on the single topic found : university/department12/room1/temperature
+tshark -r challenge2.pcapng -Y "tcp.srcport == 1883 && mqtt.msgtype == 3 && mqtt.topic == university/department12/room1/temperature" -T fields -e tcp.dstport > sent_messages_to_clients.txt
+
+// Check which of the clients that received the message subscribed to the topic without wildcards
+tshark -r challenge2.pcapng -Y "mqtt.msgtype == 8 && mqtt.topic == university/department12/room1/temperature" -T fields -e tcp.srcport | grep -F -f ./sent_messages_to_clients.txt > subscribed_clients.txt
 
 ### Answer
-No Last Will message found
+3: 
+	39551
+	53557
+	41789
 
 ----------------
 
@@ -106,4 +115,16 @@ tshark -r challenge2.pcapng -Y "mqtt.qos == 0 && mqtt.msgtype == 3 && mqtt.retai
 
 ### Answer
 208
+
 ----------------
+
+CQ7) How many MQTT-SN messages on port 1885 are sent by the clients to a broker in the local machine?
+
+### Used Filters
+mqttsn && tcp.dstport == 1885
+
+### Commands
+tshark -r challenge2.pcapng -Y "mqttsn && tcp.dstport == 1885"
+
+### Answer
+0: No traffic
