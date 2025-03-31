@@ -1,6 +1,0 @@
-10.0.2.15	university/+/+/#
-10.0.2.15	university/room0/room1/#
-10.0.2.15	house/#
-10.0.2.15	university/#
-10.0.2.15	university/building2/section0/#
-10.0.2.15	factory/department3/floor0/#

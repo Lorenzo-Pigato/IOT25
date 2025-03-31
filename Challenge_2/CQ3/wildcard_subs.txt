@@ -1,0 +1,6 @@
+10.0.2.15	38641	university/+/+/#
+10.0.2.15	38619	university/room0/room1/#
+10.0.2.15	54449	house/#
+10.0.2.15	38619	university/#
+10.0.2.15	57863	university/building2/section0/#
+10.0.2.15	38619	factory/department3/floor0/#

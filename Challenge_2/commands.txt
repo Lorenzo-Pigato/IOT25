@@ -27,7 +27,7 @@ coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18	// NON GET requests
 ### Commands
 tshark -r challenge2.pcapng -Y "coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18" -T fields -e coap.opt.uri_path -e coap.token | sort | uniq | cut -f1 | sort | uniq -c > con_get_resources_count.txt
 
-tshark -r challenge2.pcapng -Y "coap.type == 1 && coap.code == 1 && ip.dst == 134.102.218.18" -T fields -e coap.opt.uri_path -e coap.token | sort | uniq | cut -f1 | sort | uniq -c > non_get_resources_count.txt
+tshark -r challenge2.pcapng -Y "coap.type == 0 && coap.code == 1 && ip.dst == 134.102.218.18" -T fields -e coap.opt.uri_path -e coap.token | sort | uniq | cut -f1 | sort | uniq -c > non_get_resources_count.txt
 
 comm -12 <(sort con_get_resources_count.txt) <(sort non_get_resources_count.txt)
 
@@ -46,15 +46,16 @@ dns.qry.name == broker.hivemq.com && dns.flags && dns.flags.response == 1 && dns
 (ip.addr == 35.158.43.69 || ip.addr == 35.158.34.213 || ip.addr == 18.192.151.104) && mqtt && mqtt.msgtype == 8 && mqtt.topic contains "#"
 
 ### Commands
-tshark -r challenge2.pcapng -Y "(ip.addr == 35.158.43.69 || ip.addr == 35.158.34.213 || ip.addr == 18.192.151.104) && mqtt && mqtt.msgtype == 8 && mqtt.topic contains \"#\" " -T fields -e ip.src -e mqtt.topic    
+tshark -r challenge2.pcapng -Y "(ip.addr == 35.158.43.69 || ip.addr == 35.158.34.213 || ip.addr == 18.192.151.104) && mqtt && mqtt.msgtype == 8 && mqtt.topic contains \"#\" " -T fields -e ip.src -e tcp.srcport -e mqtt.topic > wildcard_subs.txt
+
+cut -f2 wilcard_subs.txt | sort | uniq -c | wc -l
 
 ### Answer
-10.0.2.15       university/+/+/#                                                                          │
-10.0.2.15       university/room0/room1/#                                                                  │
-10.0.2.15       house/#                                                                                   │
-10.0.2.15       university/#                                                                              │
-10.0.2.15       university/building2/section0/#                                                           │
-10.0.2.15       factory/department3/floor0/#
+4:
+      38619
+      38641
+      54449
+      57863
 
 ----------------
 
