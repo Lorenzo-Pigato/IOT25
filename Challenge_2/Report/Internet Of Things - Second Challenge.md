@@ -32,9 +32,12 @@ fields -e coap.mid > error_responses.txt
 grep -F -f put_requests.txt error_responses.txt | wc -l
  ```
 
-**Final output**![[CQ1.2.png]]
+**Final output** [message_id]
+<img src="CQ1.2.png" style="display: block; margin: 0 auto;" width="600">
 
----
+
+<hr style="page-break-after: always;" />
+
 ## CQ2
 > How many CoAP resources in the coap.me public server received the same number of unique Confirmable and Non Confirmable GET requests?
 
@@ -68,7 +71,7 @@ comm -12 <(sort con_get_resources_count.txt) <(sort non_get_resources_count.txt)
 
 Each _tshark_ command produces a list of sets [resource_path, token] which is then piped through a _sort_ and _uniq_ command in order to find unique couples of resources and tokens. This new list is then cut to keep only the resource and piped again through _sort_ and counted using _uniq -c_ to find how many requests are done for each resource 
 
-**Final output**
+**Final output** [requests, topic]
 ```txt
 	1 large
 	1 secret
@@ -103,14 +106,15 @@ tshark -r challenge2.pcapng -Y "(ip.addr == 35.158.43.69 || ip.addr == 35.158.34
 cut -f2 wilcard_subs.txt | sort | uniq -c | wc -l
 ```
 
-**Final Output**
- ![[Screenshot from 2025-03-31 11-50-29.png]]
+**Final Output** [ip_src, src_port, topic]
+<img src="Screenshot from 2025-03-31 11-50-29.png" style="display: block; margin: 0 auto;" width="650">
+ 
 
 ---
 ## CQ4 
 >How many different MQTT clients specify a last Will Message to be directed to a topic having as first level "university" ?"
 
-**Answer**: 1 [::1 - university/department12/room1/temperature]
+#### Answer: 1 [38083 - university/department12/room1/temperature]
 
 A set of filter rules can be used to find all the **MQTT connect** requests, with the **willflag** and  **CONNACK** flags set to 1 and a **Last Will Topic** that contains the string "university"
 
@@ -119,10 +123,11 @@ A set of filter rules can be used to find all the **MQTT connect** requests, wit
 mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains "university"
 ```
 
-**Output** ![[Screenshot from 2025-03-31 11-57-04.png]]
-	**Note**:  first command is used to identify the topic
+**Output** [src_port, topic]
+![[Pasted image 20250406160819.png]]
 
----
+<hr style="page-break-after: always;" />
+
 ## CQ5
 > How many MQTT subscribers receive a last will message derived from a subscription without a wildcard?
 
@@ -185,12 +190,17 @@ mqtt.msgtype == 8 && mqtt.topic == university/department12/room1/temperature
 ![[Screenshot from 2025-03-31 12-43-40.png]]
 	**Note**: `grep` is used in order to find common elements between the output found at point 5 and the output of this last filter
 
+<hr style="page-break-after: always;" />
+
 **Final answer**:
 ```
 	39551
 	53557
 	41789
 ```
+
+<hr style="page-break-after: always;" />
+
 ## CQ6
 >How many MQTT publish messages directed to the public broker Mosquitto are sent with the retain option and use QoS “At most once”?
  
@@ -211,7 +221,7 @@ mqtt.qos == 0 && mqtt.msgtype == 3 && mqtt.retain == 1 && ip.dst ==  5.196.78.28
 
 Packets are then counted using `wc -l`
 ![[Screenshot from 2025-03-31 12-47-02.png]]
-## QC7
+## CQ7
 >How many MQTT-SN messages on port 1885 are sent by the clients to a broker in the local machine?
 
 #### Answer: 0

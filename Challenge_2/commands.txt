@@ -65,9 +65,7 @@ CQ4) How many different MQTT clients specify a last Will Message to be directed 
 mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains "university"
 
 ### Commands
-tshark -r challenge2.pcapng -Y "mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains \"university\"" -T fields -e ip.src -e mqtt.willtopic 
-
-tshark -r challenge2.pcapng -Y "mqtt.willtopic contains \"university\"" -T fields -e ip.src -e mqtt.willtopic | wc -l
+tshark -r challenge2.pcapng -Y "mqtt.msgtype == 1 && mqtt.conflag.willflag == 1 && mqtt.willtopic contains \"university\"" -T fields -e tcp.srcport -e mqtt.willtopic 
 
 ### Answer
 1: 127.0.0.1 university/department12/room1/temperature
